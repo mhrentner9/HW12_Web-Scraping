@@ -6,36 +6,41 @@ import pandas as pd
 from webdriver_manager.chrome import ChromeDriverManager
 import time
 
-
 # In[2]:
-def scrape_info():
-
+def init_browser():
+ 
     # Setup splinter
     executable_path = {'executable_path': ChromeDriverManager().install()}
     browser = Browser('chrome', **executable_path, headless=False)
-
+    return browser
 
     # In[3]:
 
 
-    # --- Visit Mars News site ---
-    browser.visit('https://redplanetscience.com/')
+    # Show path that we will be using
+    # https://splinter.readthedocs.io/en/latest/drivers/chrome.html
+    get_ipython().system('which chromedriver')
 
-    time.sleep(1)
+#Scrape the Mars News Site and collect the latest News Title and Paragraph Text. 
+#Assign the text to variables that you can reference later.
+# Visit Nasa news url through splinter module
+def scrape():
+    browser = init_browser()
 
-    #Scrape the Mars News Site and collect the latest News Title and Paragraph Text. 
-    #Assign the text to variables that you can reference later.
-    # Visit Nasa news url through splinter module
     url_news = "https://redplanetscience.com/"
     browser.visit(url_news)
 
+
     # In[4]:
+
 
     # HTML Object
     html_news = browser.html
     soup = bs(html_news, "html.parser")
 
+
     # In[5]:
+
 
     # Scrape the latest News Title and Paragraph Text
     news_title = soup.find("div", class_ = "content_title").text
@@ -50,6 +55,9 @@ def scrape_info():
     # In[6]:
 
 
+    # Exit Browser.
+    browser.quit()
+
 
     # In[7]:
 
@@ -58,7 +66,6 @@ def scrape_info():
     executable_path = {'executable_path': ChromeDriverManager().install()}
     browser = Browser('chrome', **executable_path, headless=False)
 
-    time.sleep(1)
 
     # In[8]:
 
@@ -76,28 +83,28 @@ def scrape_info():
     for image in images:
         link = image.find("a")
         href = link['href']
-
+        
         featured_image_url = ("https://spaceimages-mars.com/" + href)
-
+        
     featured_image_url
 
 
-    # In[16]:
+    # In[11]:
 
 
-    facts_url = 'https://galaxyfacts-mars.com'
+    facts_url = 'https://galaxyfacts.com/mars/'
     response = requests.get(facts_url)
     soup = bs(response.text, 'html.parser')
 
 
-    # In[17]:
+    # In[13]:
 
 
     tables = pd.read_html(facts_url)
-    tables[1]
+    tables[0]
 
 
-    # In[18]:
+    # In[33]:
 
 
     # Visit Mars facts url 
@@ -107,7 +114,7 @@ def scrape_info():
     mars_facts = pd.read_html(facts_url)
 
     # Find the mars facts DataFrame in the list of DataFrames as assign it to `mars_df`
-    mars_df = mars_facts[0]
+    mars_df = mars_facts[1]
 
     # Assign the columns `['Description', 'Value']`
     mars_df.columns = ['Description','Mars','Earth']
@@ -124,7 +131,7 @@ def scrape_info():
     mars_df
 
 
-    # In[19]:
+    # In[34]:
 
 
     # Visit hemispheres website through splinter module 
@@ -132,7 +139,7 @@ def scrape_info():
     browser.visit(hemispheres_url)
 
 
-    # In[20]:
+    # In[35]:
 
 
     # HTML Object
@@ -154,49 +161,38 @@ def scrape_info():
     for i in items: 
         # Store title
         title = i.find('h3').text
-
+        
         # Store link that leads to full image website
         partial_img_url = i.find('a', class_='itemLink product-item')['href']
-
+        
         # Visit the link that contains the full image website 
         browser.visit(hemispheres_main_url + partial_img_url)
-
+        
         # HTML Object of individual hemisphere information website 
         partial_img_html = browser.html
-
+        
         # Parse HTML with Beautiful Soup for every individual hemisphere information website 
         soup = bs( partial_img_html, 'html.parser')
-
+        
         # Retrieve full image source 
         img_url = hemispheres_main_url + soup.find('img', class_='wide-image')['src']
-
+        
         # Append the retreived information into a list of dictionaries 
         hemisphere_image_urls.append({"title" : title, "img_url" : img_url})
-
+        
 
     # Display hemisphere_image_urls
     hemisphere_image_urls
-
-
-
-    # Store data in a dictionary
-    mars_data = {
-        "news_title": news_title,
-        "news_paragraph": news_paragraph,
-        "featured_image": featured_image_url,
-        "mars_facts": mars_df,
-        "hemispheres": hemisphere_image_urls
-    }
-    # Return results
-    return mars_data
-
     # Close the browser after scraping
     browser.quit()
 
+# In[ ]:
 
 
-if __name__ == "__main__":
-    print(scrape_info())
+
+
+
+# In[ ]:
 
 
 
